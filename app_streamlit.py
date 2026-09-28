@@ -1,4 +1,4 @@
-# app_streamlit.py — IP-SAKTI Sahayak (Streamlit UI)
+# app_streamlit.py - IP-SAKTI Sahayak (Streamlit UI)
 # Run with:  streamlit run app_streamlit.py
 import os
 import time
@@ -33,7 +33,7 @@ collection = load_collection()
 gemini = load_gemini()
 
 # ---------- LLM: Gemini with retries, then Ollama offline fallback ----------
-def ask_llm(prompt: str) -> tuple[str, str]:
+def ask_llm(prompt: str):
     for attempt in range(3):
         try:
             r = gemini.models.generate_content(model="gemini-2.5-flash", contents=prompt)
@@ -41,7 +41,7 @@ def ask_llm(prompt: str) -> tuple[str, str]:
         except Exception:
             if attempt < 2:
                 time.sleep(5 * (attempt + 1))
-    try:  # offline fallback — Ollama must be running: `ollama serve`
+    try:  # offline fallback - Ollama must be running: `ollama serve`
         r = requests.post(
             "http://localhost:11434/api/generate",
             json={"model": "llama3", "prompt": prompt, "stream": False},
@@ -53,17 +53,14 @@ def ask_llm(prompt: str) -> tuple[str, str]:
                 "model is running. Start Ollama or try again later."), "unavailable"
 
 # ---------- RAG ----------
-def answer(question: str) -> tuple[str, list[str], str]:
+def answer(question: str):
     q_vec = embedder.encode([question]).tolist()
     results = collection.query(query_embeddings=q_vec, n_results=4)
 
     context = ""
     sources = []
     for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
-        context += f"[Source: {meta['source']}]
-{doc}
-
-"
+        context += f"[Source: {meta['source']}]\n{doc}\n\n"
         if meta["source"] not in sources:
             sources.append(meta["source"])
 
@@ -80,7 +77,7 @@ Rules:
   "I don't have enough information in my knowledge base."
 - Always cite sources inline like [source filename].
 - Answer in the SAME language as the question. Note: the context is in
-  English — that's fine, translate/summarize it into the question's language.
+  English - that's fine, translate/summarize it into the question's language.
 
 CONTEXT:
 {context}
@@ -92,7 +89,7 @@ QUESTION: {question}"""
 
 # ---------- Streamlit UI ----------
 st.title("🌿 IP-SAKTI Sahayak")
-st.caption("Ayurveda Intellectual Property & regulatory guidance · Hindi + English · source-cited")
+st.caption("Ayurveda Intellectual Property & regulatory guidance - Hindi + English - source-cited")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -103,10 +100,10 @@ for m in st.session_state.messages:
         if m.get("sources"):
             with st.expander("📚 Sources"):
                 for s in m["sources"]:
-                    st.caption(f"• {s}")
-                st.caption(f"_Engine: {m['engine']}_")
+                    st.caption(f"- {s}")
+                st.caption(f"Engine: {m['engine']}")
 
-if q := st.chat_input("e.g. क्या आयुर्वेदिक उत्पाद पर patent मिल सकता है?"):
+if q := st.chat_input("e.g. kya Ayurvedic product par patent mil sakta hai?"):
     st.session_state.messages.append({"role": "user", "content": q})
     with st.chat_message("user"):
         st.markdown(q)
@@ -117,8 +114,8 @@ if q := st.chat_input("e.g. क्या आयुर्वेदिक उत�
         st.markdown(text)
         with st.expander("📚 Sources"):
             for s in sources:
-                st.caption(f"• {s}")
-            st.caption(f"_Engine: {engine}_")
+                st.caption(f"- {s}")
+            st.caption(f"Engine: {engine}")
     st.session_state.messages.append(
         {"role": "assistant", "content": text, "sources": sources, "engine": engine}
     )
