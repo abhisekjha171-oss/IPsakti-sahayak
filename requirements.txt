@@ -1,5 +1,0 @@
-streamlit
-chromadb==1.0.20
-sentence-transformers
-google-genai
-requests
