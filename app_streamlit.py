@@ -94,7 +94,10 @@ def _chunk_text(text):
     return chunks
 
 @st.cache_resource
-def load_collection(embedder):
+def load_collection():
+    # NOTE: no parameters allowed here - Streamlit cannot hash ML objects.
+    # We call load_embedder() INSIDE, it is cached so this is free.
+    emb_model = load_embedder()
     client = chromadb.PersistentClient(path="db")
     try:
         return client.get_collection("ipsakti")
@@ -133,7 +136,7 @@ def load_collection(embedder):
         "First run on this server: building the knowledge base from data/ PDFs. "
         "This can take 5-10 minutes - please don't close this tab."
     )
-    emb = embedder.encode(docs, show_progress_bar=False).tolist()
+    emb = emb_model.encode(docs, show_progress_bar=False).tolist()
     col = client.get_or_create_collection(
         name="ipsakti", metadata={"hnsw:space": "cosine"}
     )
@@ -149,7 +152,7 @@ def load_gemini():
     return genai.Client(api_key=key)
 
 embedder = load_embedder()
-collection = load_collection(embedder)
+collection = load_collection()
 gemini = load_gemini()
 
 # ---------------- LLM: Gemini with retries, then Ollama offline fallback ----------------
