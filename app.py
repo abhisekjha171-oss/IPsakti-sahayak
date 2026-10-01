@@ -4,7 +4,7 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 from google import genai
 
-API_KEY = "AQ.Ab8RN6JQ_-7Ur9Ur0S30yN-fic7DZBiBIef9Gva-XbtDmGXsGQ"   # your key should already be here — keep it!
+API_KEY = "AQ.Ab8RN6ICMCpoFPDgmmHRwfl6LMgcMdUZoLZK4NFX9tCQ9Z1_tQ"   # your key should already be here — keep it!
 
 gemini = genai.Client(api_key=API_KEY)
 embedder = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
